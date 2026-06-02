@@ -2,6 +2,7 @@ import os
 import time
 import base64
 import logging
+import unicodedata
 import cv2
 import numpy as np
 import torch
@@ -176,12 +177,14 @@ def classify_cocoa(request):
         }, status=500)
 
     # 9. Format response
-    predicted_class_name = manager.class_names[pred_class_idx]
+    raw_predicted_class_name = manager.class_names[pred_class_idx]
+    predicted_class_name = unicodedata.normalize('NFC', raw_predicted_class_name)
     confidence = float(probs[pred_class_idx])
     
     probabilities_dict = {}
     for idx, name in enumerate(manager.class_names):
-        probabilities_dict[name] = float(probs[idx])
+        norm_name = unicodedata.normalize('NFC', name)
+        probabilities_dict[norm_name] = float(probs[idx])
         
     # Generate Base64 segmented image for premium frontend rendering
     try:
